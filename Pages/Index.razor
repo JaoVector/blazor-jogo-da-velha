@@ -1,0 +1,65 @@
+﻿@page "/"
+@inject IJSRuntime JS
+
+<div>
+    <h1>Jogo da Velha</h1>
+    <div class="board">
+        @for(int i = 0; i < board.Length; i++)
+        {
+            int index = i;
+            <div class="square" @onclick="() => Click(index)">
+                <h5 class="char">@board[i]</h5>
+            </div>
+        }
+    </div>
+</div>
+
+@code{
+    string[] board = { "", "", "", "", "", "", "", "", "" };
+    string Player = "X";
+    int[][] vencedorCombo =
+    {
+        new int[3]{0,1,2},
+        new int[3]{3,4,5},
+        new int[3]{6,7,8},
+        new int[3]{0,3,6},
+        new int[3]{1,4,7},
+        new int[3]{2,5,8},
+        new int[3]{0,4,8},
+        new int[3]{2,4,6}, 
+    };
+
+    private async Task Click(int index)
+    {
+        board[index] = Player;
+        Player = Player == "X" ? "O" : "X";
+        foreach (int[] combo in vencedorCombo)
+        {
+            int p1 = combo[0];
+            int p2 = combo[1];
+            int p3 = combo[2];
+
+            if (board[p1] == string.Empty || board[p2] == string.Empty || board[p3] == string.Empty)
+                continue;
+            if(board[p1] == board[p2] && board[p2] == board[p3] && board[p1] == board[p3])
+            {
+                string ganhador = Player == "X" ? "Jogador Two " : "Jogador One ";
+                await JS.InvokeVoidAsync("ShowSwal", ganhador);
+                ResetGame();            }
+        }
+
+        if (board.All(x => x != ""))
+        {
+            await JS.InvokeVoidAsync("ShowTie");
+            ResetGame();
+        }
+    }
+
+    private void ResetGame()
+    {
+        for (int i = 0; i < board.Length; i++)
+        {
+            board[i] = "";
+        } 
+    }
+}
